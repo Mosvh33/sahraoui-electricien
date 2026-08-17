@@ -129,10 +129,76 @@ function initFooterYear() {
   });
 }
 
+/* ---------- Compteurs animés (chiffres clés) ---------- */
+function initStatCounters() {
+  const stats = document.querySelectorAll('.stat-number[data-count-to]');
+  if (!stats.length || !('IntersectionObserver' in window)) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function animate(el) {
+    const target = parseInt(el.dataset.countTo, 10);
+    const suffix = el.dataset.suffix || '';
+    if (reduceMotion) { el.textContent = target + suffix; return; }
+    const duration = 1100;
+    const start = performance.now();
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target) + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        animate(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+
+  stats.forEach((el) => observer.observe(el));
+}
+
+/* ---------- Indice de glissement sur le premier curseur avant/après ---------- */
+function initDragHint() {
+  const firstSlider = document.querySelector('.ba-slider');
+  if (!firstSlider) return;
+  const handle = firstSlider.querySelector('.ba-handle');
+  if (!handle) return;
+  handle.classList.add('hint');
+  const clearHint = () => handle.classList.remove('hint');
+  firstSlider.addEventListener('mousedown', clearHint, { once: true });
+  firstSlider.addEventListener('touchstart', clearHint, { once: true });
+}
+
+/* ---------- Apparition en fondu au défilement ---------- */
+function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) return;
+  const items = document.querySelectorAll('.card, .testimonial-card, .section-header, .process-step, .blog-card');
+  if (!items.length) return;
+  items.forEach((el) => el.classList.add('reveal'));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  items.forEach((el) => observer.observe(el));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initMobileNav();
   initBeforeAfterSliders();
   initPortfolioFilters();
   initContactForm();
   initFooterYear();
+  initStatCounters();
+  initDragHint();
+  initScrollReveal();
 });

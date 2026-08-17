@@ -613,8 +613,10 @@ p { color: var(--color-text-light); }
   aspect-ratio: 16/9;
   background: linear-gradient(135deg, var(--color-primary), var(--color-dark));
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 .blog-card-image svg { width: 48px; height: 48px; opacity: 0.85; }
+.blog-card-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.08) contrast(1.04); }
 .blog-card-body { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
 .blog-meta { font-size: 0.78rem; color: var(--color-text-light); margin-bottom: 10px; font-weight: 600; }
 .blog-card h3 { font-size: 1.15rem; margin-bottom: 10px; }
@@ -718,4 +720,52 @@ article.blog-post ol li { list-style: decimal; }
   .section { padding: 52px 0; }
   .form-card { padding: 24px; }
   .cta-banner { padding: 32px 24px; }
+}
+
+/* ---------- Photos : étalonnage + vignette cohérents ---------- */
+.ba-slider, .photo-card, .hero-visual-icon { position: relative; }
+.ba-img, .photo-card img, .hero-visual-icon img, .blog-hero-img { filter: saturate(1.08) contrast(1.04); }
+.ba-slider::after, .photo-card::after, .hero-visual-icon::after, .blog-hero-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(10,14,40,0.22) 100%);
+  pointer-events: none;
+}
+
+/* ---------- Blog : image d'en-tête d'article ---------- */
+.blog-hero-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 28px;
+}
+.blog-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ---------- Logo : pulsation discrète ---------- */
+@keyframes logoPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255,107,53,0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(255,107,53,0.5)); }
+}
+.logo-mark img { animation: logoPulse 3.6s ease-in-out infinite; }
+
+/* ---------- Curseur avant/après : indice de glissement ---------- */
+@keyframes dragHint {
+  0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+  50% { transform: translate(-50%, -50%) translateX(9px); }
+}
+.ba-handle.hint::after { animation: dragHint 1.5s ease-in-out infinite; }
+
+/* ---------- Apparition en fondu au défilement ---------- */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark img { animation: none; }
+  .ba-handle.hint::after { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
 }
